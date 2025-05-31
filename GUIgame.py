@@ -157,7 +157,7 @@ def highlightSquares(screen, board : chess.Board, square_selected):
     if square_selected != ():
 
         row, col = square_selected
-        src_uci = f'{chr(ord('a') + col)}{row}'
+        src_uci = f'{chr(ord("a") + col)}{row}'
         
         row = 8 - row
         
@@ -222,13 +222,23 @@ def drawFog(screen, board : chess.Board, game_over):
 
     # Apply fog to all other squares
     s = p.Surface((SQUARE_SIZE, SQUARE_SIZE))
-    if game_over:
-        s.set_alpha(200)
     s.fill(fog_color)
-    for row in range(DIMENSION):
-        for col in range(DIMENSION):
-            if (row, col) not in visible_squares:
-                screen.blit(s, (col * SQUARE_SIZE, row * SQUARE_SIZE))
+    if game_over:
+        for row in range(DIMENSION):
+            for col in range(DIMENSION):
+                if (row, col) not in visible_squares:
+                    s.set_alpha(200)
+                    screen.blit(s, (col * SQUARE_SIZE, row * SQUARE_SIZE))
+    else:
+        for row in range(DIMENSION):
+            for col in range(DIMENSION):
+                if (row, col) not in visible_squares:
+                    colors = [p.Color("white"), p.Color("gray")]
+                    color = colors[((row + col) % 2)]
+                    p.draw.rect(screen, color, p.Rect(col * SQUARE_SIZE, row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
+                    s.set_alpha(225)
+                    screen.blit(s, (col * SQUARE_SIZE, row * SQUARE_SIZE))
+    return
 
 def drawMoveLog(screen, game_state, font, texting=False):
     """
