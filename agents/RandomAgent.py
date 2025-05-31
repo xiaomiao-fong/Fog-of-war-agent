@@ -1,7 +1,6 @@
 import chess
 from chess import Move
 from .BaseAgent import BaseAgent
-import time
 import random
 
 class RandomAgent(BaseAgent):
@@ -10,4 +9,4 @@ class RandomAgent(BaseAgent):
         super().__init__(name)
 
     def act(self, board : chess.Board) -> Move:
-        return random.choice(list(board.pseudo_legal_moves.__iter__()))
+        return random.choice(list(board.pseudo_legal_moves))

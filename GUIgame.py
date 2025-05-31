@@ -9,6 +9,7 @@ from multiprocessing import Process, Queue
 import chess
 from chess import Move
 import random
+from .utils import *
 
 BOARD_WIDTH = BOARD_HEIGHT = 512
 MOVE_LOG_PANEL_WIDTH = 250
@@ -94,7 +95,7 @@ def main():
         if not game_over and not human_turn:
             board.push(
                 random.choice(
-                    list(board.pseudo_legal_moves.__iter__())))
+                    list(board.pseudo_legal_moves)))
 
         if move_made:
             move_made = False
@@ -112,8 +113,6 @@ def main():
         clock.tick(MAX_FPS)
         p.display.flip()
 
-def parse_board(board : chess.Board) -> list[list[str]]:
-    return [r.split(' ') for r in str(board).split('\n')]
     
 
 def drawGameState(screen, board : chess.Board, square_selected, game_over):
@@ -122,7 +121,7 @@ def drawGameState(screen, board : chess.Board, square_selected, game_over):
     """
     drawBoard(screen)  # draw squares on the board
     highlightSquares(screen, board, square_selected)
-    drawPieces(screen, parse_board(board))  # draw pieces on top of those squares
+    drawPieces(screen, board_to_array(board))  # draw pieces on top of those squares
     drawFog(screen, board, game_over)
 
 
@@ -161,7 +160,7 @@ def highlightSquares(screen, board : chess.Board, square_selected):
         
         row = 8 - row
         
-        pb : str = parse_board(board)[row][col]
+        pb : str = board_to_array(board)[row][col]
         if((board.turn == chess.WHITE and pb.isupper()) or
            (board.turn == chess.BLACK and not pb.isupper())):
             # highlight selected square
@@ -196,7 +195,7 @@ def drawFog(screen, board : chess.Board, game_over):
     """
     Draw fog over squares that white cannot see, regardless of whose turn it is.
     """
-    pb = parse_board(board)
+    pb = board_to_array(board)
     fog_color = p.Color("#3a3a3a")
 
     visible_squares = set()
@@ -213,7 +212,7 @@ def drawFog(screen, board : chess.Board, game_over):
 
     # Reveal valid move targets for white
     
-    for move in tempboard.pseudo_legal_moves.__iter__():
+    for move in tempboard.pseudo_legal_moves:
             
         dcol = ord(move.uci()[2]) - ord('a')
         drow = 8 - int(move.uci()[3])
