@@ -8,8 +8,11 @@ import sys
 from multiprocessing import Process, Queue
 import chess
 from chess import Move
+from utils.BoardManipulation import *
 import random
-from .utils import *
+
+# Agent imports
+from agents.GreedyAgent import GreedyAgent
 
 BOARD_WIDTH = BOARD_HEIGHT = 512
 MOVE_LOG_PANEL_WIDTH = 250
@@ -84,6 +87,7 @@ def main():
 
                         # TODO block illegal move
                         player_clicks = [square_selected]
+                        #print legal moves
                         if(not board.pseudo_legal_moves.__contains__(move)) : continue
 
                         board.push(move)
@@ -93,9 +97,9 @@ def main():
 
         # AI move finder
         if not game_over and not human_turn:
-            board.push(
-                random.choice(
-                    list(board.pseudo_legal_moves)))
+            best_move = GreedyAgent().act(board)
+            print(best_move)
+            board.push(best_move)
 
         if move_made:
             move_made = False
