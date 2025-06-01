@@ -1,2 +1,2 @@
-from BaseAgent import BaseAgent
-from RandomAgent import RandomAgent
+from .BaseAgent import BaseAgent
+from .RandomAgent import RandomAgent

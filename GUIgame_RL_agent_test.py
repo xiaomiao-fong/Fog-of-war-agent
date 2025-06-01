@@ -10,6 +10,7 @@ import chess
 from chess import Move
 import random
 from utils.BoardManipulation import *
+from agents.RLAgent import RLAgent
 
 BOARD_WIDTH = BOARD_HEIGHT = 512
 MOVE_LOG_PANEL_WIDTH = 250
@@ -54,6 +55,8 @@ def main():
     player_one = True  # if a human is playing white, then this will be True, else False
     player_two = False  # if a hyman is playing white, then this will be True, else False
 
+    agent = RLAgent()
+
     while running:
         human_turn = (board.turn == chess.WHITE and player_one) or (board.turn == chess.BLACK and player_two)
         for e in p.event.get():
@@ -93,9 +96,7 @@ def main():
 
         # AI move finder
         if not game_over and not human_turn:
-            board.push(
-                random.choice(
-                    list(board.pseudo_legal_moves)))
+            board.push(agent.act(board))
 
         if move_made:
             move_made = False
