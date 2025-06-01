@@ -13,6 +13,11 @@ from utils.BoardManipulation import *
 import agents
 import time
 
+# since RL Agent requires more dependencies, make it optional
+LOAD_RL_AGENT = False
+if LOAD_RL_AGENT:
+    import agents.RLAgent as RLAgent
+
 BOARD_WIDTH = BOARD_HEIGHT = 512
 MOVE_LOG_PANEL_WIDTH = 250
 MOVE_LOG_PANEL_HEIGHT = BOARD_HEIGHT
@@ -21,7 +26,7 @@ SQUARE_SIZE = BOARD_HEIGHT // DIMENSION
 MAX_FPS = 15
 IMAGES = {}
 
-agent = agents.RLAgent()
+agent = agents.RandomAgent()
 
 def loadImages():
     """
