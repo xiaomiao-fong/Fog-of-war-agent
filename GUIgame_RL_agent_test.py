@@ -11,6 +11,7 @@ from chess import Move
 import random
 from utils.BoardManipulation import *
 from agents.RLAgent import RLAgent
+import time
 
 BOARD_WIDTH = BOARD_HEIGHT = 512
 MOVE_LOG_PANEL_WIDTH = 250
@@ -96,6 +97,7 @@ def main():
 
         # AI move finder
         if not game_over and not human_turn:
+            time.sleep(0.5)
             board.push(agent.act(board))
 
         if move_made:
