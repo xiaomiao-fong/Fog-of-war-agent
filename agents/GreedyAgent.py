@@ -36,7 +36,7 @@ class GreedyAgent(BaseAgent):
         best_value = float('inf')
         
         for move in board.pseudo_legal_moves:
-            print("move: " + str(move), end='\t;')
+            # print("move: " + str(move), end='\t;')
             board.push(move)
             nowd = board.copy()
             nowd.pop()  # Undo the move to evaluate the next one
@@ -75,7 +75,7 @@ class GreedyAgent(BaseAgent):
         black_visible_squares = self.get_black_visible_squares(board)
         for square in black_visible_squares:
             value -= 0.1
-        print("value: " + str(value))
+        # print("value: " + str(value))
         return value
     
     def know_black_checked_in_vision(self, board: chess.Board) -> bool:
