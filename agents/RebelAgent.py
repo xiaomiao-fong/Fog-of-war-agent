@@ -4,8 +4,8 @@ from collections import defaultdict
 
 class ReBeLAgent(BaseAgent):
 
-    def __init__(self, name):
-        super().__init__(name)
+    def __init__(self):
+        super().__init__("ReBeLAgent")
         
         self.belief = []
         

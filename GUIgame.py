@@ -10,6 +10,7 @@ import chess
 from chess import Move
 import random
 from utils.BoardManipulation import *
+import agents
 import time
 
 BOARD_WIDTH = BOARD_HEIGHT = 512
@@ -20,6 +21,7 @@ SQUARE_SIZE = BOARD_HEIGHT // DIMENSION
 MAX_FPS = 15
 IMAGES = {}
 
+agent = agents.RandomAgent()
 
 def loadImages():
     """
@@ -95,9 +97,10 @@ def main():
         # AI move finder
         if not game_over and not human_turn:
             time.sleep(0.5)
-            board.push(
-                random.choice(
-                    list(board.pseudo_legal_moves)))
+            board.push(agent.act(board))
+            # board.push(
+            #     random.choice(
+            #         list(board.pseudo_legal_moves)))
 
         if move_made:
             move_made = False
