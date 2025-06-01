@@ -35,7 +35,7 @@ class GreedyAgent(BaseAgent):
         best_move = set
         best_value = float('inf')
         
-        for move in board.legal_moves:
+        for move in board.pseudo_legal_moves:
             # print("move: " + str(move), end='\t;')
             board.push(move)
             value = self.evaluate_board(board)

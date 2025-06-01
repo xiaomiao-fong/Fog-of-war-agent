@@ -21,7 +21,7 @@ SQUARE_SIZE = BOARD_HEIGHT // DIMENSION
 MAX_FPS = 15
 IMAGES = {}
 
-agent = agents.RandomAgent()
+agent = agents.RLAgent()
 
 def loadImages():
     """
@@ -79,10 +79,23 @@ def main():
 
                     if len(player_clicks) == 2 and human_turn:  # after 2nd click
                         
-                        src = (player_clicks[0][0], chr(ord('a') + player_clicks[0][1]))
-                        dest = (player_clicks[1][0], chr(ord('a') + player_clicks[1][1]))
+                        src_row, src_col = player_clicks[0]
+                        dest_row, dest_col = player_clicks[1]
 
-                        move = Move.from_uci(f'{src[1]}{src[0]}{dest[1]}{dest[0]}')
+                        src_uci = f'{chr(ord("a") + src_col)}{src_row}'
+                        dest_uci = f'{chr(ord("a") + dest_col)}{dest_row}'
+
+                        # Check for pawn promotion
+                        piece_at_src = board.piece_at(chess.square(src_col, src_row -1)) # chess.Board uses 0-7 for ranks, GUI uses 1-8
+
+                        if piece_at_src and piece_at_src.piece_type == chess.PAWN:
+                            if (board.turn == chess.WHITE and dest_row == 8) or \
+                               (board.turn == chess.BLACK and dest_row == 1):
+                                move = Move.from_uci(f'{src_uci}{dest_uci}q') # Promote to queen
+                            else:
+                                move = Move.from_uci(f'{src_uci}{dest_uci}')
+                        else:
+                            move = Move.from_uci(f'{src_uci}{dest_uci}')
 
 
                         # TODO block illegal move
@@ -92,16 +105,13 @@ def main():
                         board.push(move)
                         square_selected = ()  # reset user clicks
                         player_clicks = []
-                        
+            # end of human play loop
 
         # AI move finder
         if not game_over and not human_turn:
             time.sleep(0.5)
             board.push(agent.act(board))
-            # board.push(
-            #     random.choice(
-            #         list(board.pseudo_legal_moves)))
-
+            
         if move_made:
             move_made = False
 

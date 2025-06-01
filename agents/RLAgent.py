@@ -58,7 +58,7 @@ class ChessFogEnvForAgent(gym.Env):
 
     def action_masks(self) -> np.ndarray:
         mask = np.zeros(self.action_space.n, dtype=bool)
-        for move in self.board.legal_moves:
+        for move in self.board.pseudo_legal_moves:
             if move in self._move_to_action_map:
                 action_idx = self._move_to_action_map[move]
                 mask[action_idx] = True
