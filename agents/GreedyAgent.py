@@ -4,18 +4,20 @@ from .BaseAgent import BaseAgent
 import random
 
 class GreedyAgent(BaseAgent):
-    def __init__(self):
+    def __init__(self, faction):
         super().__init__("GreedyAgent")
+        self.faction = chess.WHITE if faction == "WHITE" else chess.BLACK
+        self.opponent_faction = chess.BLACK if self.faction == chess.WHITE else chess.WHITE
 
     def get_black_visible_squares(self, board):
         # Get all squares that are visible to the black pieces
         black_visible_squares = set()
         for square in chess.SQUARES:
             piece = board.piece_at(square)
-            if piece and piece.color == chess.BLACK:
+            if piece and piece.color == self.faction:
                 black_visible_squares.add(square)
                 # add pawn moves
-                if piece.piece_type == chess.PAWN and piece.color == chess.BLACK:
+                if piece.piece_type == chess.PAWN and piece.color == self.faction:
                     # Pawns attack diagonally forward
                     if square + 7 in chess.SQUARES:
                         black_visible_squares.add(square + 7)
@@ -68,7 +70,7 @@ class GreedyAgent(BaseAgent):
         value = 0.0
         for square in chess.SQUARES:
             piece = board.piece_at(square)
-            if piece and piece.color == chess.WHITE:
+            if piece and piece.color == self.opponent_faction:
                 value += piece_values.get(piece.piece_type, 0)
         
         # add value for getting vision of black pieces
@@ -82,14 +84,14 @@ class GreedyAgent(BaseAgent):
         # 1. get all squares that are visible to the black pieces
         black_visible_squares = self.get_black_visible_squares(board)
         # 2. check if the white king is in check
-        white_king_square = board.king(chess.WHITE)
+        white_king_square = board.king(self.opponent_faction)
         # 3. if the white king is in check, check if the square is visible to the black pieces
         if white_king_square in black_visible_squares:
             return False
         # 4. if the white king is not in check, check if black king is in check by visiable white pieces
-        black_king_square = board.king(chess.BLACK)
+        black_king_square = board.king(self.faction)
         for square in black_visible_squares:
             piece = board.piece_at(square)
-            if piece and piece.color == chess.WHITE:
-                if board.is_attacked_by(chess.WHITE, black_king_square):
+            if piece and piece.color == self.opponent_faction:
+                if board.is_attacked_by(self.opponent_faction, black_king_square):
                     return True

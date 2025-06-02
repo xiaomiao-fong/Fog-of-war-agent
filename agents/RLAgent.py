@@ -12,6 +12,7 @@ from sb3_contrib import MaskablePPO
 from .BaseAgent import BaseAgent
 
 
+
 class ChessFogEnvForAgent(gym.Env):
     """
     A minimal ChessFogEnv necessary for loading the MaskablePPO model
