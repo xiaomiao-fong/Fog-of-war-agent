@@ -1,0 +1,7 @@
+python-chess 
+stable-baselines3 
+sb3_contrib
+gym
+numpy
+torch
+pygame

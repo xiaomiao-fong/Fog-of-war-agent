@@ -7,17 +7,10 @@ from gym import spaces
 from stable_baselines3.common.torch_layers import BaseFeaturesExtractor
 import torch.nn as nn
 import os
-
 from sb3_contrib import MaskablePPO
-from sb3_contrib.common.maskable.policies import MaskableActorCriticPolicy
-from sb3_contrib.common.maskable.utils import get_action_masks
 
-from agents import BaseAgent # Assuming BaseAgent.py is in the same directory
+from .BaseAgent import BaseAgent
 
-# Re-define ChessFogEnv and CustomCNN as they are necessary for loading the model
-# and for the agent to understand the observation space and action space.
-# We'll adapt ChessFogEnv slightly for agent usage, primarily for _action_to_move
-# and potentially a simplified _get_obs if not directly using the full env.
 
 class ChessFogEnvForAgent(gym.Env):
     """
@@ -82,17 +75,17 @@ class ChessFogEnvForAgent(gym.Env):
         white_planes = np.zeros((6, 8, 8), dtype=np.uint8)
         black_planes = np.zeros((6, 8, 8), dtype=np.uint8)
         for pt in range(1, 7):
-            for sq in self.board.pieces(pt, chess.BLACK):
+            for sq in self.board.pieces(pt, chess.WHITE):
                 mask[sq // 8, sq % 8] = 1
-                black_planes[pt - 1, sq // 8, sq % 8] = 1
-        for move in self.board.legal_moves:
-            if self.board.color_at(move.from_square) == chess.BLACK:
+                white_planes[pt - 1, sq // 8, sq % 8] = 1
+        for move in self.board.pseudo_legal_moves:
+            if self.board.color_at(move.from_square) == chess.WHITE:
                 to_sq = move.to_square
                 mask[to_sq // 8, to_sq % 8] = 1
                 if self.board.is_capture(move):
                     captured = self.board.piece_at(to_sq)
                     if captured:
-                        white_planes[captured.piece_type - 1, to_sq // 8, to_sq % 8] = 1
+                        black_planes[captured.piece_type - 1, to_sq // 8, to_sq % 8] = 1
                 piece = self.board.piece_at(move.from_square)
                 if piece:
                     if piece.piece_type in (chess.BISHOP, chess.ROOK, chess.QUEEN):
@@ -107,7 +100,7 @@ class ChessFogEnvForAgent(gym.Env):
                     if piece.piece_type == chess.PAWN and abs(move.to_square - move.from_square) == 16:
                         mid = (move.from_square + move.to_square) // 2
                         mask[mid // 8, mid % 8] = 1
-        obs = np.vstack((mask[None, ...], black_planes, white_planes)).astype(np.float32)
+        obs = np.vstack((mask[None, ...], white_planes, black_planes)).astype(np.float32)
         return obs
 
     def _get_full_obs(self):
@@ -160,12 +153,13 @@ class CustomCNN(BaseFeaturesExtractor):
 
 
 class RLAgent(BaseAgent):
-    def __init__(self, name="ChessFogRLAgent", model_path="models/CNN_RL/chess_fog_ppo_model.zip", fog=True):
-        super().__init__(name)
+    def __init__(self, model_path="models/CNN_RL/chess_fog_ppo_model.zip", fog=True):
+        super().__init__("ChessFogRLAgent")
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.env = ChessFogEnvForAgent(fog=fog)
         self.model = self._load_model(model_path)
         self.fog = fog
+        self._flipped_square_map = {i: chess.square_mirror(i) for i in range(64)}
 
     def _load_model(self, model_path):
         if os.path.exists(model_path):
@@ -186,7 +180,15 @@ class RLAgent(BaseAgent):
         """
         Selects a move based on the loaded MaskablePPO model.
         """
-        self.env.board = board.copy()
+        original_board = board.copy()
+
+        if original_board.turn == chess.BLACK:
+            flipped_board = original_board.mirror()
+            flipped_board.turn = chess.WHITE 
+        else:
+            flipped_board = original_board.copy()
+            
+        self.env.board = flipped_board 
 
         obs = self.env._get_obs()
         action_masks = self.env.action_masks()
@@ -194,23 +196,31 @@ class RLAgent(BaseAgent):
         obs_tensor = torch.as_tensor(obs[None]).float()
         action_masks_tensor = torch.as_tensor(action_masks[None])
 
-        obs_tensor_cpu = obs_tensor.cpu()
-        action_masks_tensor_cpu = action_masks_tensor.cpu()
-
         action, _states = self.model.predict(
-            obs_tensor_cpu, # Pass the CPU tensor
-            action_masks=action_masks_tensor_cpu, # Pass the CPU tensor
+            obs_tensor,
+            action_masks=action_masks_tensor,
             deterministic=True
         )
 
         predicted_action_idx = action.item()
+        predicted_move_on_flipped_board = self.env._action_to_move(predicted_action_idx)
 
-        move = self.env._action_to_move(predicted_action_idx)
-
-        if move in board.pseudo_legal_moves:
-            return move
+        # If the board was flipped, flip the predicted move back to the original board's perspective
+        if original_board.turn == chess.BLACK:
+            # Flip the from_square and to_square of the predicted move
+            from_square_orig = self._flipped_square_map[predicted_move_on_flipped_board.from_square]
+            to_square_orig = self._flipped_square_map[predicted_move_on_flipped_board.to_square]
+            
+            # Create the final move for the original board
+            final_move = chess.Move(from_square_orig, to_square_orig, 
+                                    promotion=predicted_move_on_flipped_board.promotion)
         else:
-            print(f"Warning: Model predicted an illegal move: {move}. Falling back to a random legal move.")
+            final_move = predicted_move_on_flipped_board
+
+        if final_move in board.pseudo_legal_moves:
+            return final_move
+        else:
+            print(f"Warning: Model predicted an illegal move: {final_move}. Falling back to a random legal move.")
             return list(board.pseudo_legal_moves)[0] if list(board.pseudo_legal_moves) else None
 
 
