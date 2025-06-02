@@ -6,9 +6,12 @@ import random
 class GreedyAgent(BaseAgent):
     def __init__(self, faction):
         super().__init__("GreedyAgent")
-        self.faction = chess.WHITE if faction == "WHITE" else chess.BLACK
+        self.faction = chess.WHITE if faction == chess.WHITE else chess.BLACK
         self.opponent_faction = chess.BLACK if self.faction == chess.WHITE else chess.WHITE
-
+        if self.faction == chess.WHITE:
+            print("GreedyAgent initialized as White")
+        else:
+            print("GreedyAgent initialized as Black")
     def get_self_visible_squares(self, board):
         # Get all squares that are visible to the self pieces
         self_visible_squares = set()
@@ -98,7 +101,7 @@ class GreedyAgent(BaseAgent):
                     return True
         return False
     def can_attack_king(self, piece, from_square, king_square, board):
-        if from_square == king_square:
+        if from_square == king_square or not from_square or not king_square:
             return False
         # Check if the piece can attack the king square
         if piece.piece_type == chess.PAWN:
@@ -111,7 +114,7 @@ class GreedyAgent(BaseAgent):
                             from_square + 6, from_square - 6, from_square + 10, from_square - 10]
             if king_square in knight_moves:
                 return True
-        elif piece.piece_type == chess.BISHOP:
+        elif piece.piece_type == chess.BISHOP or piece.piece_type == chess.QUEEN:
             # Bishops move diagonally
             dx = abs((king_square % 8) - (from_square % 8))
             dy = abs((king_square // 8) - (from_square // 8))
@@ -123,7 +126,7 @@ class GreedyAgent(BaseAgent):
                     if board.piece_at(from_square + i * step_x + i * step_y * 8):
                         return False
                 return True
-        elif piece.piece_type == chess.ROOK:
+        elif piece.piece_type == chess.ROOK or piece.piece_type == chess.QUEEN:
             # Rooks move horizontally or vertically
             if from_square % 8 == king_square % 8 or from_square // 8 == king_square // 8:
                 # Check if the path is clear
@@ -139,30 +142,4 @@ class GreedyAgent(BaseAgent):
                     if board.piece_at(from_square + i * step * 8):
                         return False
                 return True
-        elif piece.piece_type == chess.QUEEN:
-            # Queens move like both rooks and bishops
-            if (from_square % 8 == king_square % 8 or from_square // 8 == king_square // 8 or
-                abs((king_square % 8) - (from_square % 8)) == abs((king_square // 8) - (from_square // 8))):
-                # Check if the path is clear
-                if from_square % 8 == king_square % 8:
-                    step = 1 if (king_square // 8) > (from_square // 8) else -1
-                    for i in range(1, abs((king_square // 8) - (from_square // 8))):
-                        if board.piece_at(from_square + i * step * 8):
-                            return False
-                    return True
-                elif from_square // 8 == king_square // 8:
-                    step = 1 if (king_square % 8) > (from_square % 8) else -1
-                    for i in range(1, abs((king_square % 8) - (from_square % 8))):
-                        if board.piece_at(from_square + i * step):
-                            return False
-                    return True
-                else:
-                    dx = abs((king_square % 8) - (from_square % 8))
-                    dy = abs((king_square // 8) - (from_square // 8))
-                    step_x = 1 if (king_square % 8) > (from_square % 8) else -1
-                    step_y = 1 if (king_square // 8) > (from_square // 8) else -1
-                    for i in range(1, dx):
-                        if board.piece_at(from_square + i * step_x + i * step_y * 8):
-                            return False
-                    return True
         return False
