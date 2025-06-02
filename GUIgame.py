@@ -26,7 +26,7 @@ SQUARE_SIZE = BOARD_HEIGHT // DIMENSION
 MAX_FPS = 15
 IMAGES = {}
 
-agent = agents.RandomAgent()
+agent = agents.GreedyAgent()  # Initialize the agent
 
 def loadImages():
     """

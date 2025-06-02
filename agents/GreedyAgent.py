@@ -38,8 +38,10 @@ class GreedyAgent(BaseAgent):
         for move in board.pseudo_legal_moves:
             # print("move: " + str(move), end='\t;')
             board.push(move)
-            value = self.evaluate_board(board)
-            board.pop()
+            nowd = board.copy()
+            nowd.pop()  # Undo the move to evaluate the next one
+            value = self.evaluate_board(board, nowd)
+            board.pop()  # Undo the move to restore the board state
             
             if abs(value - best_value) < 1e-5:  # Check for equality with a tolerance
                 best_move.add(move)
@@ -47,9 +49,13 @@ class GreedyAgent(BaseAgent):
                 best_move = {move}
                 best_value = value
                 
-        return random.choice(list(best_move)) if best_move else None
+        return random.choice(list(best_move)) if best_move else random.choice(list(board.pseudo_legal_moves))
 
-    def evaluate_board(self, board: chess.Board) -> int:
+    def evaluate_board(self, board: chess.Board, vision) -> int:
+        # check if the white king is in check
+        know_black_checked = self.know_black_checked_in_vision(board)
+        if know_black_checked:
+            return float('inf')
         # evaluate the best move in black vision
         piece_values = {
             chess.PAWN: 10,
@@ -66,9 +72,24 @@ class GreedyAgent(BaseAgent):
                 value += piece_values.get(piece.piece_type, 0)
         
         # add value for getting vision of black pieces
-        visi=0
         black_visible_squares = self.get_black_visible_squares(board)
         for square in black_visible_squares:
             value -= 0.1
         # print("value: " + str(value))
         return value
+    
+    def know_black_checked_in_vision(self, board: chess.Board) -> bool:
+        # 1. get all squares that are visible to the black pieces
+        black_visible_squares = self.get_black_visible_squares(board)
+        # 2. check if the white king is in check
+        white_king_square = board.king(chess.WHITE)
+        # 3. if the white king is in check, check if the square is visible to the black pieces
+        if white_king_square in black_visible_squares:
+            return False
+        # 4. if the white king is not in check, check if black king is in check by visiable white pieces
+        black_king_square = board.king(chess.BLACK)
+        for square in black_visible_squares:
+            piece = board.piece_at(square)
+            if piece and piece.color == chess.WHITE:
+                if board.is_attacked_by(chess.WHITE, black_king_square):
+                    return True
