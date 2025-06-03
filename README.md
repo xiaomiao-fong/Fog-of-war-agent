@@ -6,7 +6,7 @@ Group Members : 林子鈞、葉羽宸、潘仰祐、林宥廷
 
 ## Overview
 ### Fog of War Chess
-[Fog of War Chess]( https://en.wikipedia.org/wiki/Dark_chess ) (aka. Dark Chess) is a variant of chess. It is named so due to its characteristic of incomplete information - your chess piece types are invisible to your opponent; they can only see their own chess pieces and which positions are taken, and vice versa.
+[Fog of War Chess]( https://en.wikipedia.org/wiki/Dark_chess ) (aka. Dark Chess) is a variant of chess. It is named so due to its characteristic of incomplete information - your chess piece types are invisible to your opponent; they can only see their own chess pieces and positions they can legally move to, and vice versa.
 
 ### Prerequisite
 Please refer to [`requirements.txt`]( ./requirements.txt ). Run `pip3 install -r requirements.txt` to install them all. The working versions of them are:
