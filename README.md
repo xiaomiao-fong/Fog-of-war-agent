@@ -23,10 +23,27 @@ pygame==2.6.1
 The coding environment is mainly on `Windows-10-10.0.22631-SP0`. But Ubuntu/Debian with kernel `Linux-6.1.0` (e.g. Debian 12) should also work.
 
 ### Usage
-TBA...
+Use the following command to play against our agent:
+``python GUIgame.py``
 
-### Hyper-Parameters
-TBA...
+### Hyperparameter
 
-### Experiment Results
-TBA...
+
+### Experiment results
+
+The results show that our greedy agent performs great against RandomAgent, but our trained agents don't.
+This indicates that our agents didn't learn good policies. This might be due to:
+1. The absence of belief state estimation over our fogged states.
+2. Not enough training steps.
+3. Our reward mechanism may make our agent overly defensive.
+
+![image](https://github.com/user-attachments/assets/e8a29f55-3b55-4485-bbe1-89524471d659)
+![image](https://github.com/user-attachments/assets/48c86fb1-5543-40f4-9234-8bad9c49d77a)
+![image](https://github.com/user-attachments/assets/7fadca5c-5f1d-4d7b-9984-3b2dec1168c8)
+
+Another interesting observation is that black has an advantage over white when played in greedy or random policy.
+This might suggest that early exposure poses a weakness to your opponent.<br>
+![image](https://github.com/user-attachments/assets/e705bcca-4f18-44a6-baca-a0e1378c82c2)
+![image](https://github.com/user-attachments/assets/cf30b9b5-86ef-4bc8-8404-8eb725cd26e2)
+
+
