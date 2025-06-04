@@ -11,7 +11,8 @@ Group Members : 林子鈞、葉羽宸、潘仰祐、林宥廷
 ### Prerequisite
 Please refer to [`requirements.txt`]( ./requirements.txt ). Run `pip3 install -r requirements.txt` to install them all. The working versions of them are:
 ```
-python-chess==3.10.9     # 3.11.2 won't work
+python==3.10.9           # 3.11.2 won't work
+python-chess==1.11.2
 stable-baselines3==2.6.0
 sb3_contrib==2.6.0
 gym==0.26.0
